@@ -21,31 +21,38 @@ import pandas as pd
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/calculate')
 def calculate():
     return_str = ''
     x = np.array([[1, 2], [3, 4]])
     y = np.array([[5, 6], [7, 8]])
+    return_str += 'x dot y : {}'.format(str(np.dot(x, y)))
+    return return_str
+
+
+@app.route('/reglineal')
+def reglineal():
+    return_str = ''
+    #x = np.array([[1, 2], [3, 4]])
+    #y = np.array([[5, 6], [7, 8]])
     data=pd.read_csv("day.csv")
     import statsmodels.formula.api as smf
 
     lm= smf.ols(formula= "cnt~weathersit", data=data).fit()
-    #lm.params
+    lm.params
 
     #lm.pvalues
-    print(lm.rsquared)
-    print(lm.rsquared_adj)
+    #print(lm.rsquared)
+    #print(lm.rsquared_adj)
 
     print(lm.summary())
 
-
-    print ( data.head() )
+    #print ( data.head() )
     #return_str += 'x: {} , y: {}<br />'.format(str(x), str(y))
     return_str += str(lm.rsquared) + ' , ' + str(lm.rsquared_adj)
     # Multiply matrices
     #return_str += 'x dot y : {}'.format(str(np.dot(x, y)))
     return return_str
-
 
 @app.errorhandler(500)
 def server_error(e):
