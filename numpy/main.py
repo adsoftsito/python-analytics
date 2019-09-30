@@ -17,6 +17,8 @@ import logging
 from flask import Flask
 import numpy as np
 import pandas as pd
+from pandas.io.json import json_normalize
+import requests
 
 app = Flask(__name__)
 
@@ -33,25 +35,52 @@ def calculate():
 @app.route('/reglineal')
 def reglineal():
     return_str = ''
-    #x = np.array([[1, 2], [3, 4]])
-    #y = np.array([[5, 6], [7, 8]])
     data=pd.read_csv("day.csv")
     import statsmodels.formula.api as smf
 
     lm= smf.ols(formula= "cnt~weathersit", data=data).fit()
     lm.params
-
-    #lm.pvalues
-    #print(lm.rsquared)
-    #print(lm.rsquared_adj)
-
     print(lm.summary())
-
-    #print ( data.head() )
-    #return_str += 'x: {} , y: {}<br />'.format(str(x), str(y))
     return_str += str(lm.rsquared) + ' , ' + str(lm.rsquared_adj)
-    # Multiply matrices
-    #return_str += 'x dot y : {}'.format(str(np.dot(x, y)))
+    return return_str
+
+@app.route('/ols')
+def ols():
+    return_str = 'ok'
+    resp = requests.get('https://upheld-castle-251021.appspot.com/censos?entidad=30&municipio=118')
+    #resp = requests.get('https://upheld-castle-251021.appspot.com/entidades')
+   
+    if resp.status_code != 200:
+    # This means something went wrong.
+        raise ApiError('GET /tasks/ {}'.format(resp.status_code))
+    #for todo_item in resp.json():
+    #    print('{} {}'.format(todo_item['actividad_economica'], todo_item['ue']))
+        #return_str += '{} {}'.format(todo_item['cve_ent'], todo_item['entidad'])
+    #print ( json_normalize(resp.json()) )
+    data=json_normalize(resp.json())
+    #print (data)
+
+    df = data[['cve_mun', 'a211a']]
+    #ue = [item['cve_ent'] for item in data]
+    #a211a = [item['entidad'] for item in data]
+    #ratings = [item['rating'] for item in data]
+    #vendors = [item['vendors'][0]['display'] if len(item['vendors']) != 0 else 'N/A' for item in data]
+    #paths = [item['paths'][0]['path_label'] for item in data]
+    #skillLevel = [item['difficulty']['display'] for item in data]
+    #links = [base + item['seoslug'] for item in data]
+
+    #df=  pd.DataFrame(
+    #  {'ue': ue,
+    #   'a211a': a211a
+    #  })
+    #df = data['ue','a211a']
+    import statsmodels.formula.api as smf
+    #print (df)
+    lm= smf.ols(formula= "cve_mun~a211a", data=df).fit()
+    #print (lm.params)
+    print(lm.summary())
+    return_str += str(lm.rsquared) + ' , ' + str(lm.rsquared_adj)
+
     return return_str
 
 @app.errorhandler(500)
