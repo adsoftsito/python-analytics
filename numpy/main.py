@@ -47,7 +47,9 @@ def reglineal():
 @app.route('/ols')
 def ols():
     return_str = 'ok'
-    resp = requests.get('https://upheld-castle-251021.appspot.com/censos?entidad=30&municipio=118')
+    #resp = requests.get('https://upheld-castle-251021.appspot.com/censos?entidad=30&municipio=118')
+    resp = requests.get('https://upheld-castle-251021.appspot.com/ols?entidad=30')
+    #resp = requests.get('http://localhost:10010/ols?entidad=30')
     #resp = requests.get('https://upheld-castle-251021.appspot.com/entidades')
    
     if resp.status_code != 200:
@@ -56,30 +58,21 @@ def ols():
     #for todo_item in resp.json():
     #    print('{} {}'.format(todo_item['actividad_economica'], todo_item['ue']))
         #return_str += '{} {}'.format(todo_item['cve_ent'], todo_item['entidad'])
-    #print ( json_normalize(resp.json()) )
     data=json_normalize(resp.json())
-    #print (data)
+    df = data[['cve_mun', 'Internets.viviendas_acceso_internet', 'Idhs.idh']]
+    df.rename(columns={'Internets.viviendas_acceso_internet': 'internet'}, inplace=True)
+    df.rename(columns={'Idhs.idh': 'idh'}, inplace=True)
 
-    df = data[['cve_mun', 'a211a']]
-    #ue = [item['cve_ent'] for item in data]
-    #a211a = [item['entidad'] for item in data]
-    #ratings = [item['rating'] for item in data]
-    #vendors = [item['vendors'][0]['display'] if len(item['vendors']) != 0 else 'N/A' for item in data]
-    #paths = [item['paths'][0]['path_label'] for item in data]
-    #skillLevel = [item['difficulty']['display'] for item in data]
-    #links = [base + item['seoslug'] for item in data]
-
-    #df=  pd.DataFrame(
-    #  {'ue': ue,
-    #   'a211a': a211a
-    #  })
-    #df = data['ue','a211a']
+ 
     import statsmodels.formula.api as smf
-    #print (df)
-    lm= smf.ols(formula= "cve_mun~a211a", data=df).fit()
+    print (df)
+    df.to_csv('data.csv')
+    #lm= smf.ols(formula= "internet~idh", data=df).fit()
+    #lm= smf.ols(data=df).fit()
+    
     #print (lm.params)
-    print(lm.summary())
-    return_str += str(lm.rsquared) + ' , ' + str(lm.rsquared_adj)
+    #print(lm.summary())
+    #return_str += str(lm.rsquared) + ' , ' + str(lm.rsquared_adj)
 
     return return_str
 
